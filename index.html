@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temple Invitation</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    overflow:hidden;
+    font-family:Georgia, serif;
+}
+
+.scene{
+    position:relative;
+    width:430px;
+    height:744px;
+    overflow:hidden;
+    transform:scale(var(--scene-scale, 1));
+    transform-origin:center;
+}
+
+.opening-invite,
+.opening-lamp-prompt{
+    position:absolute;
+    left:0;
+    z-index:40;
+    width:100%;
+    text-align:center;
+    text-shadow:0 2px 8px rgba(20,18,30,.55);
+    pointer-events:none;
+}
+
+.opening-invite{
+    top:5%;
+    color:#f3d18a;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:38px;
+    font-style:italic;
+}
+
+.opening-lamp-prompt{
+    bottom:5%;
+    color:#f7ecda;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:18px;
+    font-style:italic;
+}
+
+/* MAIN IMAGE */
+
+.bg{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+
+    filter:
+    brightness(.75)
+    saturate(.9);
+
+    transition:all 3s ease;
+}
+
+.scene.lit .bg{
+    filter:
+    brightness(1.25)
+    saturate(1.15)
+    contrast(1.05);
+}
+
+/* TEMPLE GLOW */
+
+.temple-light{
+    position:absolute;
+    inset:0;
+
+    background:
+    radial-gradient(
+        circle at center 55%,
+        rgba(255,215,80,.6) 0%,
+        rgba(255,215,80,.25) 35%,
+        transparent 75%
+    );
+
+    opacity:0;
+    transition:3s ease;
+
+    mix-blend-mode:screen;
+}
+
+.scene.lit .temple-light{
+    opacity:1;
+}
+
+/* FLOOR REFLECTION */
+
+.floor-light{
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+
+    width:450px;
+    height:180px;
+
+    background:
+    radial-gradient(
+        ellipse,
+        rgba(255,210,100,.35),
+        transparent 70%
+    );
+
+    opacity:0;
+    transition:2s;
+}
+
+.scene.lit .floor-light{
+    opacity:1;
+}
+
+/* CLICKABLE LAMP */
+
+.lamp-hitbox{
+    position:absolute;
+
+    left:50%;
+    top:52%;
+
+    width:150px;
+    height:260px;
+
+    transform:translateX(-50%);
+
+    cursor:pointer;
+    z-index:50;
+}
+
+/* FLAMES */
+
+.flame{
+    position:absolute;
+
+    width:16px;
+    height:32px;
+
+    opacity:0;
+
+    transform:rotate(var(--tilt)) scale(0);
+
+    transform-origin:50% 100%;
+    clip-path:path("M 8 0 C 10 6, 16 13, 16 21 C 16 28, 12.5 32, 8 32 C 3.5 32, 0 28, 0 21 C 0 13, 6 6, 8 0 Z");
+
+    background:
+    radial-gradient(ellipse at 50% 78%,
+        #fffde0 0%,
+        #ffe66b 30%,
+        #ffb51b 61%,
+        rgba(255,100,0,.12) 100%
+    );
+
+    filter:
+    blur(.5px)
+    drop-shadow(0 0 8px #ffcc00);
+
+    z-index:30;
+}
+
+.flame::after{
+    content:"";
+    position:absolute;
+    left:5px;
+    bottom:2px;
+    width:6px;
+    height:15px;
+    border-radius:50%;
+    background:linear-gradient(to top, rgba(255,255,230,.95), rgba(255,248,190,.7), transparent);
+    filter:blur(1px);
+}
+
+.scene.lit .flame{
+    opacity:1;
+    animation:flicker .2s infinite;
+}
+
+/* DIYA POSITIONS */
+
+.f1{
+    left:147px;
+    top:306px;
+    --tilt:-10deg;
+}
+
+.f2{
+    left:174px;
+    top:300px;
+    --tilt:-5deg;
+}
+
+.f3{
+    left:205px;
+    top:296px;
+    --tilt:0deg;
+}
+
+.f4{
+    left:246px;
+    top:300px;
+    --tilt:5deg;
+}
+
+.f5{
+    left:272px;
+    top:306px;
+    --tilt:10deg;
+}
+
+@keyframes flicker{
+
+    0%{
+        transform:rotate(calc(var(--tilt) - 2deg)) scale(.96, 1);
+    }
+
+    50%{
+        transform:rotate(calc(var(--tilt) + 2deg)) scale(1.04, 1.08);
+    }
+
+    100%{
+        transform:rotate(calc(var(--tilt) - 1deg)) scale(.98, .96);
+    }
+}
+
+/* CENTER GLOW */
+
+.lamp-glow{
+    position:absolute;
+
+    left:50%;
+    top:320px;
+
+    transform:translateX(-50%);
+
+    width:180px;
+    height:180px;
+
+    border-radius:50%;
+
+    background:
+    radial-gradient(
+        circle,
+        rgba(255,215,80,.8),
+        rgba(255,215,80,.25),
+        transparent
+    );
+
+    filter:blur(40px);
+
+    opacity:0;
+
+    transition:2s;
+}
+
+.scene.lit .lamp-glow{
+    opacity:1;
+}
+
+/* PARTICLES */
+
+.particle{
+
+    position:absolute;
+
+    width:4px;
+    height:4px;
+
+    border-radius:50%;
+    background:#ffd54f;
+
+    opacity:0;
+}
+
+.scene.lit .particle{
+    animation:floatUp 4s linear infinite;
+}
+
+@keyframes floatUp{
+
+    0%{
+        opacity:0;
+        transform:translateY(0);
+    }
+
+    20%{
+        opacity:1;
+    }
+
+    100%{
+        opacity:0;
+        transform:translateY(-250px);
+    }
+}
+
+/* INVITATION */
+
+.invitation{
+
+    position:absolute;
+
+    width:100%;
+    bottom:90px;
+
+    text-align:center;
+    color:white;
+
+    z-index:40;
+
+    opacity:0;
+    transform:translateY(40px);
+
+    transition:1.5s;
+}
+
+.scene.lit .invitation{
+    opacity:1;
+    transform:translateY(0);
+    transition-delay:1.5s;
+}
+
+.invitation h1{
+    font-size:34px;
+    margin-bottom:10px;
+}
+
+.invitation p{
+    font-size:18px;
+    line-height:1.5;
+}
+
+/* WEDDING PAGE */
+
+.wedding-page{
+    position:absolute;
+    inset:0;
+    z-index:80;
+    overflow:hidden;
+    color:#fff1df;
+    background:#182d39;
+    opacity:0;
+    visibility:hidden;
+    transform:scale(1.025);
+    transition:opacity 1.2s ease, transform 1.2s ease, visibility 1.2s;
+}
+
+.scene.show-invitation > :not(.wedding-page):not(.date-page){
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 1s ease;
+}
+
+.scene.show-invitation .wedding-page{
+    opacity:1;
+    visibility:visible;
+    transform:scale(1);
+}
+
+.scene.show-date .wedding-page{
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-24px);
+    pointer-events:none;
+}
+
+.wedding-page::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:1;
+    background:linear-gradient(180deg,rgba(13,24,39,.32),transparent 34%,transparent 72%,rgba(255,244,221,.96) 100%);
+    pointer-events:none;
+}
+
+.wedding-photo{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.wedding-heading{
+    position:absolute;
+    z-index:5;
+    top:4%;
+    left:5%;
+    width:90%;
+    text-align:center;
+    text-shadow:0 2px 12px rgba(27,20,42,.35);
+}
+
+.wedding-lead{
+    font-size:15px;
+    letter-spacing:.2px;
+}
+
+.wedding-names{
+    margin-top:7px;
+    color:#f6d69d;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:30px;
+    font-style:italic;
+    font-weight:400;
+    line-height:1.14;
+    text-align:center;
+}
+
+.wedding-ampersand{
+    display:block;
+    margin:3px 0;
+    font-size:25px;
+}
+
+.scroll-prompt{
+    position:absolute;
+    z-index:8;
+    bottom:5%;
+    left:0;
+    width:100%;
+    color:#634c3c;
+    font-family:"Segoe Script","Palatino Linotype",cursive;
+    font-size:15px;
+    font-style:italic;
+    text-align:center;
+    text-shadow:0 1px 3px rgba(255,244,221,.85);
+    cursor:pointer;
+}
+
+.date-page{
+    position:absolute;
+    inset:0;
+    z-index:90;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior-y:contain;
+    scrollbar-width:none;
+    color:#4b3526;
+    background:
+        radial-gradient(ellipse at 50% 32%,rgba(255,255,255,.62),transparent 58%),
+        repeating-linear-gradient(0deg,rgba(118,87,46,.025) 0 1px,transparent 1px 4px),
+        #f6efdf;
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(28px);
+    transition:opacity .8s ease,transform .8s ease,visibility .8s;
+}
+
+.date-page::-webkit-scrollbar{display:none}
+
+.scene.show-date .date-page{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+}
+
+.date-back{
+    position:sticky;
+    top:0;
+    z-index:10;
+    display:block;
+    width:38px;
+    height:32px;
+    margin:0 auto;
+    border:0;
+    color:#644b31;
+    background:transparent;
+    font:24px Georgia,serif;
+    cursor:pointer;
+}
+
+.date-reveal{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-bottom:8px;
+}
+
+.date-heading{
+    position:relative;
+    width:100%;
+    margin-top:2px;
+    color:#82643c;
+    font-family: "Edwardian Script ITC", cursive;
+    font-size:42px;
+    font-style:italic;
+    font-weight:400;
+    text-align:center;
+    line-height:1;
+}
+
+.date-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.date-instructions{
+    position:relative;
+    width:100%;
+    margin-top:5px;
+    font-size:18px;
+    font-style:italic;
+    text-align:center;
+    line-height:1.2;
+}
+
+.date-instructions span{
+    padding:0 6px;
+    color:#9b772f;
+}
+
+.scratch-cards{
+    position:relative;
+    display:grid;
+    width:87%;
+    margin:20px auto 0;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+}
+
+.scratch-unit{text-align:center}
+
+.scratch-card{
+    position:relative;
+    aspect-ratio: .82;
+    overflow:hidden;
+    border:1px solid rgba(148,112,47,.65);
+    border-radius:14px;
+    background:linear-gradient(145deg,#fff8e6,#d4bd7c 52%,#f0e2b9);
+    box-shadow:inset 0 0 0 4px rgba(255,252,239,.5),0 3px 8px rgba(85,62,28,.13);
+}
+
+.scratch-card::before{
+    content:"";
+    position:absolute;
+    inset:5px;
+    z-index:1;
+    border:1px solid rgba(255,250,231,.75);
+    border-radius:10px;
+    pointer-events:none;
+}
+
+.scratch-value{
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    color:#60451d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:35px;
+    text-shadow:0 1px rgba(255,255,255,.65);
+}
+
+.scratch-layer{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    width:100%;
+    height:100%;
+    cursor:crosshair;
+    touch-action:none;
+}
+
+.scratch-layer.is-revealed{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .45s ease;
+}
+
+.scratch-label{
+    margin-top:12px;
+    color:#76634d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:12px;
+    letter-spacing:3px;
+}
+
+.invitation-continuation{
+    display:none;
+    position:relative;
+    width:88%;
+    height:590px;
+    min-height:590px;
+    margin:0 auto 28px;
+    scroll-margin-top:40px;
+    padding:92px 20px 32px;
+    overflow:hidden;
+    color:#765a31;
+    text-align:center;
+    background:#b99345;
+    clip-path:path("M 189 2 C 195 14 198 22 198 34 C 218 35 230 51 230 70 C 250 72 265 87 268 108 C 289 110 304 126 307 148 C 330 151 346 169 348 191 C 366 195 378 211 378 232 L 378 590 L 0 590 L 0 232 C 0 211 12 195 30 191 C 32 169 48 151 71 148 C 74 126 89 110 110 108 C 113 87 128 72 148 70 C 148 51 160 35 180 34 C 180 22 183 14 189 2 Z");
+}
+
+.date-page.all-dates-revealed .invitation-continuation{
+    display:block;
+    animation:invitationArrival .7s ease both;
+}
+
+@keyframes invitationArrival{
+    from{opacity:0;transform:translateY(18px)}
+    to{opacity:1;transform:translateY(0)}
+}
+
+.invitation-continuation::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    background:linear-gradient(180deg,#faf5e9,#f2e9d7);
+    clip-path:path("M 189 2 C 195 14 198 22 198 34 C 218 35 230 51 230 70 C 250 72 265 87 268 108 C 289 110 304 126 307 148 C 330 151 346 169 348 191 C 366 195 378 211 378 232 L 378 590 L 0 590 L 0 232 C 0 211 12 195 30 191 C 32 169 48 151 71 148 C 74 126 89 110 110 108 C 113 87 128 72 148 70 C 148 51 160 35 180 34 C 180 22 183 14 189 2 Z");
+    transform:scale(.985);
+    filter:drop-shadow(0 0 1px rgba(185,147,69,.8));
+    pointer-events:none;
+}
+
+.invitation-seal,
+.invitation-ganesha,
+.invitation-prayer,
+.invitation-ornament,
+.invitation-copy,
+.invitation-names,
+.invitation-date{
+    position:relative;
+    z-index:1;
+}
+
+.invitation-seal{
+    display:grid;
+    place-items:center;
+    width:96px;
+    height:96px;
+    margin:0 auto 16px;
+    padding:3px;
+    overflow:hidden;
+    border:2px solid #c6a85b;
+    border-radius:50%;
+    background:#f2e4b7;
+}
+
+.invitation-seal img{
+    display:block;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:cover;
+    object-position:center 0%;
+}
+
+.invitation-prayer{
+    font-size:15px;
+    color:#846a3e;
+}
+
+.invitation-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.invitation-copy{
+    margin:0 auto 16px;
+    color:#786c5d;
+    font-size:15px;
+    font-style:italic;
+    line-height:1.6;
+    white-space:pre-line;
+}
+
+.invitation-names{
+    margin:8px 0;
+    color:#806437;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:36px;
+    font-style:italic;
+    font-weight:400;
+    line-height:1.05;
+}
+
+.invitation-with{
+    position:relative;
+    z-index:1;
+    margin:0;
+    color:#806437;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:27px;
+    font-style:italic;
+}
+
+.invitation-date{
+    margin-top:20px;
+    color:#382f28;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:16px;
+}
+
+.celebrations{
+    display:none;
+    width:100%;
+    padding:36px 22px 48px;
+    color:#4b3526;
+}
+
+.date-page.all-dates-revealed .celebrations{
+    display:block;
+    animation:invitationArrival .7s ease both;
+}
+
+.celebrations-heading{
+    color:#82643c;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:40px;
+    font-style:italic;
+    font-weight:400;
+    line-height:1;
+    text-align:center;
+}
+
+.celebrations-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.celebration-list{
+    position:relative;
+    width:100%;
+    margin:0 auto;
+    padding:0;
+    list-style:none;
+}
+
+.celebration-list::before{
+    content:"";
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:50%;
+    width:1px;
+    background:rgba(185,147,69,.65);
+}
+
+.celebration-event{
+    position:relative;
+    display:grid;
+    min-height:176px;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    align-items:center;
+    gap:0 14px;
+}
+
+.celebration-event::after{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:50%;
+    width:9px;
+    height:9px;
+    border:1px solid #b99345;
+    background:#f6efdf;
+    transform:translate(-50%,-50%) rotate(45deg);
+}
+
+.celebration-art{
+    display:grid;
+    width:100%;
+    height:164px;
+    place-items:center;
+}
+
+.celebration-art img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+.celebration-details{
+    padding:8px 4px;
+    text-align:left;
+}
+
+.celebration-event:nth-child(even) .celebration-art{
+    grid-column:2;
+    grid-row:1;
+}
+
+.celebration-event:nth-child(even) .celebration-details{
+    grid-column:1;
+    grid-row:1;
+    text-align:right;
+}
+
+.celebration-date{
+    margin-bottom:5px;
+    color:#786c5d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:10px;
+    letter-spacing:2px;
+}
+
+.celebration-time{
+    margin-bottom:5px;
+    color:#946a2b;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:27px;
+    font-style:italic;
+    line-height:1;
+}
+
+.celebration-event:nth-child(even) .celebration-time{
+    color:#587345;
+}
+
+.celebration-details h3{
+    color:#382f28;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:19px;
+    font-weight:400;
+}
+
+.celebration-hindi{
+    color:#846a3e;
+    font-size:14px;
+}
+
+.date-page.hindi-mode .celebration-hindi{display:none}
+
+.celebration-note{
+    margin-top:8px;
+    color:#806437;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:12px;
+    font-style:italic;
+}
+
+.celebration-extras{
+    padding:48px 6px 36px;
+    text-align:center;
+}
+
+.countdown-title,
+.dress-code-title{
+    color:#82643c;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:40px;
+    font-style:italic;
+    font-weight:400;
+    line-height:1;
+}
+
+.countdown-ornament,
+.dress-code-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.countdown-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    align-items:start;
+}
+
+.countdown-unit{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.countdown-value{
+    color:#806437;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:34px;
+    line-height:1.15;
+    font-variant-numeric:tabular-nums;
+}
+
+.countdown-label{
+    color:#786c5d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:12px;
+}
+
+.countdown-note{
+    margin-top:20px;
+    color:#786c5d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:16px;
+    font-style:italic;
+}
+
+.dress-code{
+    margin-top:70px;
+}
+
+.dress-code-ornament{
+    margin-bottom:22px;
+}
+
+.dress-code-copy{
+    color:#786c5d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:17px;
+    line-height:1.7;
+    white-space:pre-line;
+}
+
+.guest-dress-image{
+    display:block;
+    width:100%;
+    height:auto;
+    margin:10px auto 24px;
+    mix-blend-mode:screen;
+}
+
+.dress-code-list{
+    margin:0;
+    padding:0;
+    list-style:none;
+    text-align:left;
+}
+
+.dress-code-event{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:4px 10px;
+    padding:14px 0;
+    border-top:1px solid rgba(185,147,69,.32);
+}
+
+.dress-code-event h3{
+    color:#382f28;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:17px;
+    font-weight:400;
+}
+
+.dress-code-event p{
+    grid-column:1;
+    margin:0;
+    color:#786c5d;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:14px;
+    line-height:1.4;
+}
+
+.dress-code-swatches{
+    display:flex;
+    grid-column:2;
+    grid-row:1 / span 2;
+    gap:6px;
+}
+
+.dress-code-swatch{
+    width:27px;
+    height:27px;
+    flex:0 0 27px;
+    border:2px solid rgba(255,255,255,.92);
+    border-radius:50%;
+    background:var(--swatch-color);
+    box-shadow:0 1px 4px rgba(58,43,20,.25);
+}
+
+.rsvp-section{
+    margin:82px 0 28px;
+    padding:38px 6px 0;
+    border-top:1px solid rgba(185,147,69,.32);
+    text-align:center;
+}
+
+.rsvp-heading{
+    color:#82643c;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:42px;
+    font-style:italic;
+    font-weight:400;
+    line-height:1;
+}
+
+.rsvp-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.rsvp-form{
+    display:grid;
+    gap:0;
+    text-align:left;
+}
+
+.rsvp-field{
+    display:flex;
+    min-height:68px;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    border-bottom:1px solid rgba(185,147,69,.28);
+}
+
+.rsvp-field label{
+    color:#382f28;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:16px;
+}
+
+.rsvp-name-field,
+.rsvp-date-field{
+    display:grid;
+    grid-template-columns:118px minmax(0,1fr);
+}
+
+.rsvp-name-field label{
+    color:#76634d;
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.rsvp-input{
+    width:100%;
+    min-width:0;
+    height:48px;
+    padding:0 14px;
+    border:1px solid rgba(185,147,69,.36);
+    border-radius:10px;
+    outline-color:#9c7940;
+    color:#382f28;
+    background:rgba(255,255,255,.42);
+    font:16px "Palatino Linotype",Georgia,serif;
+}
+
+.rsvp-input::placeholder{color:#887d6e}
+
+.rsvp-stepper{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.rsvp-stepper button{
+    display:grid;
+    width:44px;
+    height:44px;
+    flex:0 0 44px;
+    place-items:center;
+    border:1px solid rgba(185,147,69,.34);
+    border-radius:50%;
+    color:#624b29;
+    background:rgba(255,255,255,.58);
+    font:22px Georgia,serif;
+    cursor:pointer;
+}
+
+.rsvp-stepper input{
+    width:34px;
+    border:0;
+    outline:0;
+    color:#382f28;
+    background:transparent;
+    font:18px "Palatino Linotype",Georgia,serif;
+    text-align:center;
+    appearance:textfield;
+}
+
+.rsvp-stepper input::-webkit-inner-spin-button,
+.rsvp-stepper input::-webkit-outer-spin-button{
+    margin:0;
+    appearance:none;
+}
+
+.rsvp-submit{
+    min-height:56px;
+    margin-top:26px;
+    border:0;
+    border-radius:999px;
+    color:#fff9ed;
+    background:#684b20;
+    box-shadow:0 5px 12px rgba(69,48,18,.2);
+    font:14px "Palatino Linotype",Georgia,serif;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+.rsvp-note{
+    margin:14px auto 0;
+    color:#786c5d;
+    font-size:13px;
+    font-style:italic;
+    line-height:1.55;
+    text-align:center;
+}
+
+.invitation-closing{
+    padding:38px 22px 30px;
+    border-top:1px solid rgba(185,147,69,.3);
+    text-align:center;
+}
+
+.closing-hashtag{
+    color:#806437;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:17px;
+    font-weight:700;
+    letter-spacing:2px;
+}
+
+.closing-quote{
+    max-width:340px;
+    margin:10px auto 0;
+    color:#786c5d;
+    font-size:15px;
+    font-style:italic;
+    line-height:1.6;
+}
+
+.closing-ornament{
+    position:relative;
+    display:block;
+    width:min(224px,70%);
+    height:40px;
+    margin:10px auto 0;
+    object-fit:cover;
+    object-position:center 48%;
+}
+
+.closing-couple-seal{
+    width:142px;
+    height:142px;
+    margin:0 auto 12px;
+    padding:4px;
+    overflow:hidden;
+    border:2px solid #34405b;
+    border-radius:50%;
+    background:#faf5e9;
+}
+
+.closing-couple-seal img{
+    display:block;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    object-fit:cover;
+    object-position:center 0%;
+}
+
+.closing-names{
+    color:#806437;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:30px;
+    font-style:italic;
+    line-height:1.15;
+}
+
+.closing-names p{margin:4px 0}
+
+.closing-with{
+    color:#806437;
+    font-family:"Edwardian Script ITC",cursive;
+    font-size:22px;
+    font-style:italic;
+}
+
+.closing-credit{
+    margin:36px auto 0;
+    color:#806437;
+    font-family:"Palatino Linotype",Georgia,serif;
+    font-size:13px;
+    line-height:1.6;
+}
+
+.page-control{
+    position:absolute;
+    z-index:9;
+    right:4%;
+    width:48px;
+    height:48px;
+    border:1px solid rgba(255,236,198,.7);
+    border-radius:50%;
+    color:#fff5df;
+    background:rgba(81,62,43,.7);
+    font:16px Georgia,serif;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,.22);
+}
+
+.language-control{
+    bottom:20%;
+    color:#6b563e;
+    background:rgba(255,245,222,.88);
+}
+
+.pause-control{
+    bottom:12%;
+    width:48px;
+    height:48px;
+    font-size:16px;
+}
+
+@media (max-width:360px){
+    .wedding-names{font-size:30px}
+    .scratch-cards{gap:8px}
+    .scratch-label{font-size:10px;letter-spacing:2px}
+    .invitation-continuation{padding-right:14px;padding-left:14px}
+    .invitation-names{font-size:30px}
+    .celebrations{padding-right:14px;padding-left:14px}
+    .celebration-event{min-height:150px;gap:0 10px}
+    .celebration-art{height:142px}
+    .celebration-time{font-size:23px}
+    .celebration-details h3{font-size:17px}
+    .countdown-title,.dress-code-title{font-size:36px}
+    .countdown-value{font-size:29px}
+    .countdown-note{font-size:14px}
+    .dress-code{margin-top:56px}
+    .dress-code-event{gap:4px 7px}
+    .dress-code-swatch{width:24px;height:24px;flex-basis:24px}
+    .rsvp-section{padding-right:0;padding-left:0}
+    .rsvp-name-field,.rsvp-date-field{grid-template-columns:104px minmax(0,1fr)}
+    .rsvp-stepper{gap:5px}
+    .rsvp-stepper button{width:38px;height:38px;flex-basis:38px}
+    .rsvp-field label{font-size:14px}
+    .closing-couple-seal{width:126px;height:126px}
+    .closing-names{font-size:26px}
+}
+
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+
+    <img src="temple.png" class="bg">
+    <p class="opening-invite" data-i18n="openingInvite">You're invited</p>
+    <p class="opening-lamp-prompt" data-i18n="openingLampPrompt">Tap the lamp to light it</p>
+
+    <div class="temple-light"></div>
+    <div class="floor-light"></div>
+    <div class="lamp-glow"></div>
+
+    <!-- FLAMES -->
+
+    <div class="flame f1"></div>
+    <div class="flame f2"></div>
+    <div class="flame f3"></div>
+    <div class="flame f4"></div>
+    <div class="flame f5"></div>
+
+    <!-- PARTICLES -->
+
+    <div class="particle" style="left:205px;top:320px;"></div>
+    <div class="particle" style="left:225px;top:330px;animation-delay:.5s;"></div>
+    <div class="particle" style="left:190px;top:340px;animation-delay:1s;"></div>
+    <div class="particle" style="left:240px;top:350px;animation-delay:1.5s;"></div>
+    <div class="particle" style="left:220px;top:345px;animation-delay:2s;"></div>
+
+    <!-- HIT AREA -->
+
+    <div class="lamp-hitbox" id="lamp"></div>
+
+    <section class="wedding-page" id="weddingPage" aria-label="Wedding invitation" aria-hidden="true" data-i18n-aria="weddingInvitation">
+        <img class="wedding-photo" src="wedding-page.png" alt="A couple standing together at a temple pond at sunset" data-i18n-alt="weddingPhotoAlt">
+        <audio id="backgroundMusic" src="wedding-music.mp3" preload="auto" loop></audio>
+        <header class="wedding-heading">
+            <p class="wedding-lead" id="weddingLead" data-i18n="weddingLead">Welcome to the wedding of</p>
+            <h1 class="wedding-names">Nikita Prasad <span class="wedding-ampersand">&amp;</span> Onkar Chafekar</h1>
+        </header>
+        <p class="scroll-prompt" id="scrollPrompt" data-i18n="scrollPrompt">Scroll down</p>
+        <button class="page-control language-control" id="languageControl" type="button" aria-label="Switch to Hindi">हि</button>
+        <button class="page-control pause-control" id="pauseControl" type="button" aria-label="Pause music">Ⅱ</button>
+    </section>
+
+    <section class="date-page" id="datePage" aria-label="Wedding date" aria-hidden="true" data-i18n-aria="datePageLabel">
+        <button class="date-back" id="dateBack" type="button" aria-label="Back to wedding invitation" data-i18n-aria="dateBack">⌄</button>
+        <div class="date-reveal">
+            <h2 class="date-heading" data-i18n="dateHeading">The Date</h2>
+            <img class="date-ornament" src="ornament.png" alt="">
+            <p class="date-instructions"><span aria-hidden="true">✦</span><span data-i18n="scratchInstruction">Scratch to reveal the date</span><span aria-hidden="true">✦</span></p>
+            <div class="scratch-cards">
+                <div class="scratch-unit">
+                    <div class="scratch-card"><span class="scratch-value">21</span><canvas class="scratch-layer" aria-label="Scratch to reveal the day" data-i18n-aria="scratchDay"></canvas></div>
+                    <p class="scratch-label" data-i18n="dayLabel">DAY</p>
+                </div>
+                <div class="scratch-unit">
+                    <div class="scratch-card"><span class="scratch-value">02</span><canvas class="scratch-layer" aria-label="Scratch to reveal the month" data-i18n-aria="scratchMonth"></canvas></div>
+                    <p class="scratch-label" data-i18n="monthLabel">MONTH</p>
+                </div>
+                <div class="scratch-unit">
+                    <div class="scratch-card"><span class="scratch-value">2027</span><canvas class="scratch-layer" aria-label="Scratch to reveal the year" data-i18n-aria="scratchYear"></canvas></div>
+                    <p class="scratch-label" data-i18n="yearLabel">YEAR</p>
+                </div>
+            </div>
+        </div>
+        <section class="invitation-continuation" aria-label="Wedding invitation details" aria-hidden="true" data-i18n-aria="invitationDetails">
+            <div class="invitation-seal"><img src="ganesha.png" alt="Ganesha" data-i18n-alt="ganeshaAlt"></div>
+            <p class="invitation-prayer">॥ श्री गणेशाय नमः ॥</p>
+            <img class="invitation-ornament" src="ornament.png" alt="">
+            <p class="invitation-copy" data-i18n="invitationCopy">Together with our families,<br>we invite you to our wedding</p>
+            <p class="invitation-names">Nikita Prasad</p>
+            <p class="invitation-with" data-i18n="with">with</p>
+            <p class="invitation-names">Onkar Chafekar</p>
+            <p class="invitation-date" data-i18n="invitationDate">Sunday, 21 February 2027</p>
+        </section>
+        <section class="celebrations" aria-label="Wedding celebrations" aria-hidden="true" data-i18n-aria="celebrationsLabel">
+            <h2 class="celebrations-heading" data-i18n="celebrationsHeading">The Celebrations</h2>
+            <img class="celebrations-ornament" src="ornament.png" alt="">
+            <ol class="celebration-list">
+                <li class="celebration-event">
+                    <div class="celebration-art"><img src="Haldi.png" alt="Haldi ceremony flowers and turmeric" data-i18n-alt="haldiAlt"></div>
+                    <div class="celebration-details">
+                        <p class="celebration-date" data-i18n="haldiDate">FRI, 19 FEB</p>
+                        <p class="celebration-time">10:30 am</p>
+                        <h3 data-i18n="haldiName">Haldi</h3>
+                        <p class="celebration-hindi">हल्दी</p>
+                    </div>
+                </li>
+                <li class="celebration-event">
+                    <div class="celebration-art"><img src="Mehendi.png" alt="Mehendi ceremony floral swing" data-i18n-alt="mehendiAlt"></div>
+                    <div class="celebration-details">
+                        <p class="celebration-date" data-i18n="mehendiDate">FRI, 19 FEB</p>
+                        <p class="celebration-time">5:00 pm</p>
+                        <h3 data-i18n="mehendiName">Mehendi</h3>
+                        <p class="celebration-hindi">मेहंदी</p>
+                    </div>
+                </li>
+                <li class="celebration-event">
+                    <div class="celebration-art"><img src="Engagement.png" alt="Floral engagement ceremony stage" data-i18n-alt="engagementAlt"></div>
+                    <div class="celebration-details">
+                        <h3 data-i18n="engagementName">Engagement</h3>
+                    </div>
+                </li>
+                <li class="celebration-event">
+                    <div class="celebration-art"><img src="Wedding.png" alt="Traditional wedding mandap" data-i18n-alt="weddingAlt"></div>
+                    <div class="celebration-details">
+                        <p class="celebration-date" data-i18n="weddingDate">SUN, 21 FEB</p>
+                        <h3 data-i18n="weddingName">Wedding</h3>
+                    </div>
+                </li>
+                <li class="celebration-event">
+                    <div class="celebration-art"><img src="Reception.png" alt="Floral reception stage" data-i18n-alt="receptionAlt"></div>
+                    <div class="celebration-details">
+                        <h3 data-i18n="receptionName">Reception</h3>
+                    </div>
+                </li>
+            </ol>
+            <section class="celebration-extras" aria-label="Countdown and dress code" data-i18n-aria="celebrationExtras">
+                <div class="haldi-countdown">
+                    <h2 class="countdown-title" data-i18n="countdownHeading">The celebration begins</h2>
+                    <img class="countdown-ornament" src="ornament.png" alt="">
+                    <div class="countdown-grid" aria-label="Countdown to the Haldi ceremony" data-i18n-aria="countdownLabel">
+                        <div class="countdown-unit"><span class="countdown-value" id="countdownDays">0</span><span class="countdown-label" data-i18n="days">Days</span></div>
+                        <div class="countdown-unit"><span class="countdown-value" id="countdownHours">00</span><span class="countdown-label" data-i18n="hours">Hours</span></div>
+                        <div class="countdown-unit"><span class="countdown-value" id="countdownMinutes">00</span><span class="countdown-label" data-i18n="minutes">Minutes</span></div>
+                        <div class="countdown-unit"><span class="countdown-value" id="countdownSeconds">00</span><span class="countdown-label" data-i18n="seconds">Seconds</span></div>
+                    </div>
+                    <p class="countdown-note" data-i18n="countdownNote">until the Haldi, on Friday, 19 February</p>
+                </div>
+                <div class="dress-code">
+                    <h2 class="dress-code-title" data-i18n="dressCodeHeading">Dress code</h2>
+                    <img class="dress-code-ornament" src="ornament.png" alt="">
+                    <p class="dress-code-copy" data-i18n="dressCodeCopy">A colour for each function,<br>if you'd like a hint.</p>
+                    <img class="guest-dress-image" src="guest_dress_code.png" alt="Wedding guests wearing colorful traditional Indian outfits" data-i18n-alt="guestDressAlt">
+                    <ol class="dress-code-list" aria-label="Dress code suggestions by function" data-i18n-aria="dressCodeList">
+                        <li class="dress-code-event">
+                            <h3 data-i18n="haldiName">Haldi</h3>
+                            <div class="dress-code-swatches" aria-hidden="true"><span class="dress-code-swatch" style="--swatch-color:#efb522"></span><span class="dress-code-swatch" style="--swatch-color:#f7eed2"></span><span class="dress-code-swatch" style="--swatch-color:#83932f"></span></div>
+                            <p data-i18n="haldiDress">Yellow and white; choose clothes you don't mind staining.</p>
+                        </li>
+                        <li class="dress-code-event">
+                            <h3 data-i18n="mehendiName">Mehendi</h3>
+                            <div class="dress-code-swatches" aria-hidden="true"><span class="dress-code-swatch" style="--swatch-color:#557b3b"></span><span class="dress-code-swatch" style="--swatch-color:#e39ca0"></span><span class="dress-code-swatch" style="--swatch-color:#f1dfbf"></span></div>
+                            <p data-i18n="mehendiDress">Greens and soft pinks.</p>
+                        </li>
+                        <li class="dress-code-event">
+                            <h3 data-i18n="engagementName">Engagement</h3>
+                            <div class="dress-code-swatches" aria-hidden="true"><span class="dress-code-swatch" style="--swatch-color:#46376f"></span><span class="dress-code-swatch" style="--swatch-color:#a91536"></span><span class="dress-code-swatch" style="--swatch-color:#c39b45"></span></div>
+                            <p data-i18n="engagementDress">Jewel tones and sparkle.</p>
+                        </li>
+                        <li class="dress-code-event">
+                            <h3 data-i18n="weddingName">Wedding</h3>
+                            <div class="dress-code-swatches" aria-hidden="true"><span class="dress-code-swatch" style="--swatch-color:#a81f40"></span><span class="dress-code-swatch" style="--swatch-color:#e98218"></span><span class="dress-code-swatch" style="--swatch-color:#f3ead4"></span></div>
+                            <p data-i18n="weddingDress">Traditional Indian, in any colour you love.</p>
+                        </li>
+                        <li class="dress-code-event">
+                            <h3 data-i18n="receptionName">Reception</h3>
+                            <div class="dress-code-swatches" aria-hidden="true"><span class="dress-code-swatch" style="--swatch-color:#1c2a48"></span><span class="dress-code-swatch" style="--swatch-color:#c2a14c"></span><span class="dress-code-swatch" style="--swatch-color:#f3ead4"></span></div>
+                            <p data-i18n="receptionDress">Evening wear, sherwanis, suits, sarees and gowns.</p>
+                        </li>
+                    </ol>
+                </div>
+                <section class="rsvp-section" aria-labelledby="rsvpHeading" aria-label="RSVP" data-i18n-aria="rsvpLabel">
+                    <h2 class="rsvp-heading" id="rsvpHeading" data-i18n="rsvpHeading">Will you join us?</h2>
+                    <img class="rsvp-ornament" src="ornament.png" alt="">
+                    <form class="rsvp-form" id="rsvpForm">
+                        <div class="rsvp-field rsvp-name-field">
+                            <label for="guestName" data-i18n="guestNameLabel">Your name</label>
+                            <input class="rsvp-input" id="guestName" name="guestName" type="text" placeholder="e.g. Shreya Sharma" data-i18n-placeholder="guestNamePlaceholder" autocomplete="name" required>
+                        </div>
+                        <div class="rsvp-field">
+                            <label for="adultCount" data-i18n="adultCountLabel">Adults:</label>
+                            <div class="rsvp-stepper">
+                                <button type="button" data-target="adultCount" data-step="-1" aria-label="Decrease number of adults" data-i18n-aria="decreaseAdults">−</button>
+                                <input id="adultCount" name="adultCount" type="number" min="0" step="1" value="1" required>
+                                <button type="button" data-target="adultCount" data-step="1" aria-label="Increase number of adults" data-i18n-aria="increaseAdults">+</button>
+                            </div>
+                        </div>
+                        <div class="rsvp-field">
+                            <label for="kidCount" data-i18n="kidCountLabel">Kids:</label>
+                            <div class="rsvp-stepper">
+                                <button type="button" data-target="kidCount" data-step="-1" aria-label="Decrease number of kids" data-i18n-aria="decreaseKids">−</button>
+                                <input id="kidCount" name="kidCount" type="number" min="0" step="1" value="0" required>
+                                <button type="button" data-target="kidCount" data-step="1" aria-label="Increase number of kids" data-i18n-aria="increaseKids">+</button>
+                            </div>
+                        </div>
+                        <div class="rsvp-field rsvp-date-field">
+                            <label for="joiningDate" data-i18n="joiningDateLabel">Date of joining:</label>
+                            <input class="rsvp-input" id="joiningDate" name="joiningDate" type="date" required>
+                        </div>
+                        <button class="rsvp-submit" type="submit" data-i18n="rsvpSubmit">Send on WhatsApp</button>
+                        <p class="rsvp-note" data-i18n="rsvpNote">WhatsApp will open with your RSVP ready to send.</p>
+                    </form>
+                </section>
+                <footer class="invitation-closing">
+                    <p class="closing-hashtag">#NOkJhok</p>
+                    <p class="closing-quote" data-i18n="closingQuote">Some playful banter, endless laughter, and a lifetime of togetherness. ✨💛</p>
+                    <img class="closing-ornament" src="ornament.png" alt="">
+                    <div class="closing-couple-seal"><img src="wedding_couple.png" alt="Nikita and Onkar in their wedding attire" data-i18n-alt="closingCoupleAlt"></div>
+                    <div class="closing-names">
+                        <p>Nikita Prasad</p>
+                        <p class="closing-with" data-i18n="with">with</p>
+                        <p>Onkar Chafekar</p>
+                    </div>
+                    <p class="closing-credit" data-i18n="closingCredit">Crafted with love by the bride's elder sister, celebrating a beautiful new beginning. 🌸</p>
+                </footer>
+            </section>
+        </section>
+    </section>
+
+</div>
+
+<script>
+
+const lamp = document.getElementById("lamp");
+const scene = document.getElementById("scene");
+const weddingPage = document.getElementById("weddingPage");
+const datePage = document.getElementById("datePage");
+const dateBack = document.getElementById("dateBack");
+const languageControl = document.getElementById("languageControl");
+const pauseControl = document.getElementById("pauseControl");
+const backgroundMusic = document.getElementById("backgroundMusic");
+const weddingLead = document.getElementById("weddingLead");
+const scrollPrompt = document.getElementById("scrollPrompt");
+const invitationContinuation = document.querySelector(".invitation-continuation");
+const celebrations = document.querySelector(".celebrations");
+const rsvpForm = document.getElementById("rsvpForm");
+const countdownTarget = new Date(2027, 1, 19, 10, 30, 0).getTime();
+const countdownValues = {
+    days:document.getElementById("countdownDays"),
+    hours:document.getElementById("countdownHours"),
+    minutes:document.getElementById("countdownMinutes"),
+    seconds:document.getElementById("countdownSeconds")
+};
+const pageTranslations = {
+    en:{
+        pageTitle:"Temple Invitation",
+        openingInvite:"You're invited",
+        openingLampPrompt:"Tap the lamp to light it",
+        switchToHindi:"Switch to Hindi",
+        switchToEnglish:"Switch to English",
+        pauseMusic:"Pause music",
+        playMusic:"Play music",
+        weddingInvitation:"Wedding invitation",
+        weddingPhotoAlt:"A couple standing together at a temple pond at sunset",
+        weddingLead:"Welcome to the wedding of",
+        scrollPrompt:"Scroll down",
+        datePageLabel:"Wedding date",
+        dateBack:"Back to wedding invitation",
+        dateHeading:"The Date",
+        scratchInstruction:"Scratch to reveal the date",
+        scratchDay:"Scratch to reveal the day",
+        scratchMonth:"Scratch to reveal the month",
+        scratchYear:"Scratch to reveal the year",
+        dayLabel:"DAY",
+        monthLabel:"MONTH",
+        yearLabel:"YEAR",
+        invitationDetails:"Wedding invitation details",
+        ganeshaAlt:"Ganesha",
+        invitationCopy:"Together with our families,\nwe invite you to our wedding",
+        with:"with",
+        invitationDate:"Sunday, 21 February 2027",
+        celebrationsLabel:"Wedding celebrations",
+        celebrationsHeading:"The Celebrations",
+        haldiAlt:"Haldi ceremony flowers and turmeric",
+        haldiDate:"FRI, 19 FEB",
+        haldiTime:"10:30 am",
+        haldiName:"Haldi",
+        mehendiAlt:"Mehendi ceremony floral swing",
+        mehendiDate:"FRI, 19 FEB",
+        mehendiTime:"5:00 pm",
+        mehendiName:"Mehendi",
+        engagementAlt:"Floral engagement ceremony stage",
+        engagementName:"Engagement",
+        weddingAlt:"Traditional wedding mandap",
+        weddingDate:"SUN, 21 FEB",
+        weddingName:"Wedding",
+        receptionAlt:"Floral reception stage",
+        receptionName:"Reception",
+        celebrationExtras:"Countdown and dress code",
+        countdownHeading:"The celebration begins",
+        countdownLabel:"Countdown to the Haldi ceremony",
+        days:"Days",
+        hours:"Hours",
+        minutes:"Minutes",
+        seconds:"Seconds",
+        countdownNote:"until the Haldi, on Friday, 19 February",
+        dressCodeHeading:"Dress code",
+        dressCodeCopy:"A colour for each function,\nif you'd like a hint.",
+        guestDressAlt:"Wedding guests wearing colorful traditional Indian outfits",
+        closingCoupleAlt:"Nikita and Onkar in their wedding attire",
+        dressCodeList:"Dress code suggestions by function",
+        haldiDress:"Yellow and white; choose clothes you don't mind staining.",
+        mehendiDress:"Greens and soft pinks.",
+        engagementDress:"Jewel tones and sparkle.",
+        weddingDress:"Traditional Indian, in any colour you love.",
+        receptionDress:"Evening wear, sherwanis, suits, sarees and gowns.",
+        rsvpLabel:"RSVP",
+        rsvpHeading:"Will you join us?",
+        guestNameLabel:"Your name",
+        guestNamePlaceholder:"e.g. Shreya Sharma",
+        adultCountLabel:"Adults:",
+        decreaseAdults:"Decrease number of adults",
+        increaseAdults:"Increase number of adults",
+        kidCountLabel:"Kids:",
+        decreaseKids:"Decrease number of kids",
+        increaseKids:"Increase number of kids",
+        joiningDateLabel:"Date of joining:",
+        rsvpSubmit:"Send on WhatsApp",
+        rsvpNote:"WhatsApp will open with your RSVP ready to send.",
+        closingQuote:"Some playful banter, endless laughter, and a lifetime of togetherness. ✨💛",
+        closingCredit:"Crafted with love by the bride's elder sister, celebrating a beautiful new beginning. 🌸",
+        whatsappTitle:"Wedding RSVP - Nikita Prasad and Onkar Chafekar"
+    },
+    hi:{
+        pageTitle:"विवाह निमंत्रण",
+        openingInvite:"आप सादर आमंत्रित हैं",
+        openingLampPrompt:"दीपक जलाने के लिए उसे छुएँ",
+        switchToHindi:"हिंदी में बदलें",
+        switchToEnglish:"अंग्रेज़ी में बदलें",
+        pauseMusic:"संगीत रोकें",
+        playMusic:"संगीत चलाएँ",
+        weddingInvitation:"विवाह निमंत्रण",
+        weddingPhotoAlt:"सूर्यास्त के समय मंदिर के कुंड के सामने खड़ा एक जोड़ा",
+        weddingLead:"हमारे विवाह में आपका स्वागत है",
+        scrollPrompt:"नीचे स्क्रॉल करें",
+        datePageLabel:"विवाह की तारीख",
+        dateBack:"विवाह निमंत्रण पर वापस जाएँ",
+        dateHeading:"शुभ विवाह तिथि",
+        scratchInstruction:"तिथि जानने के लिए खुरचें",
+        scratchDay:"दिन जानने के लिए खुरचें",
+        scratchMonth:"महीना जानने के लिए खुरचें",
+        scratchYear:"वर्ष जानने के लिए खुरचें",
+        dayLabel:"दिन",
+        monthLabel:"महीना",
+        yearLabel:"वर्ष",
+        invitationDetails:"विवाह निमंत्रण विवरण",
+        ganeshaAlt:"भगवान गणेश",
+        invitationCopy:"सपरिवार,\nआपको हमारे विवाह समारोह में आमंत्रित करते हैं।",
+        with:"के साथ",
+        invitationDate:"रविवार, 21 फ़रवरी 2027",
+        celebrationsLabel:"विवाह समारोह",
+        celebrationsHeading:"शुभ समारोह",
+        haldiAlt:"हल्दी समारोह के फूल और हल्दी",
+        haldiDate:"शुक्रवार, 19 फ़रवरी",
+        haldiTime:"10:30 पूर्वाह्न",
+        haldiName:"हल्दी",
+        mehendiAlt:"मेहंदी समारोह का फूलों से सजा झूला",
+        mehendiDate:"शुक्रवार, 19 फ़रवरी",
+        mehendiTime:"शाम 5:00 बजे",
+        mehendiName:"मेहंदी",
+        engagementAlt:"फूलों से सजा सगाई समारोह का मंच",
+        engagementName:"सगाई",
+        weddingAlt:"पारंपरिक विवाह मंडप",
+        weddingDate:"रविवार, 21 फ़रवरी",
+        weddingName:"विवाह",
+        receptionAlt:"फूलों से सजा स्वागत समारोह का मंच",
+        receptionName:"स्वागत समारोह",
+        celebrationExtras:"उलटी गिनती और वेशभूषा",
+        countdownHeading:"समारोह शुरू होने में",
+        countdownLabel:"हल्दी समारोह तक की उलटी गिनती",
+        days:"दिन",
+        hours:"घंटे",
+        minutes:"मिनट",
+        seconds:"सेकंड",
+        countdownNote:"हल्दी समारोह तक, शुक्रवार 19 फ़रवरी",
+        dressCodeHeading:"वेशभूषा",
+        dressCodeCopy:"हर समारोह के लिए एक रंग,\nअगर आप चाहें तो संकेत देखें।",
+        guestDressAlt:"रंगीन पारंपरिक भारतीय परिधान पहने विवाह के मेहमान",
+        closingCoupleAlt:"विवाह के पारंपरिक वस्त्रों में निकिता और ओंकार",
+        dressCodeList:"समारोह के अनुसार वेशभूषा सुझाव",
+        haldiDress:"पीले और सफ़ेद रंग; ऐसे कपड़े पहनें जिन पर हल्दी लगने की चिंता न हो।",
+        mehendiDress:"हरे और हल्के गुलाबी रंग।",
+        engagementDress:"गहरे रत्नों जैसे रंग और चमक।",
+        weddingDress:"पारंपरिक भारतीय परिधान, अपने पसंदीदा रंग में।",
+        receptionDress:"शाम के परिधान: शेरवानी, सूट, साड़ी या गाउन।",
+        rsvpLabel:"जवाब दें",
+        rsvpHeading:"क्या आप शामिल होंगे?",
+        guestNameLabel:"आपका नाम",
+        guestNamePlaceholder:"जैसे, श्रेया शर्मा",
+        adultCountLabel:"वयस्कों की संख्या:",
+        decreaseAdults:"वयस्कों की संख्या घटाएँ",
+        increaseAdults:"वयस्कों की संख्या बढ़ाएँ",
+        kidCountLabel:"बच्चों की संख्या:",
+        decreaseKids:"बच्चों की संख्या घटाएँ",
+        increaseKids:"बच्चों की संख्या बढ़ाएँ",
+        joiningDateLabel:"शामिल होने की तारीख:",
+        rsvpSubmit:"WhatsApp पर भेजें",
+        rsvpNote:"आपका जवाब WhatsApp में तैयार होगा। भेजने से पहले उसे जाँचकर भेजें।",
+        closingQuote:"थोड़ी हँसी-मज़ाक, ढेर सारी मुस्कानें और जीवन भर का साथ। ✨💛",
+        closingCredit:"दुल्हन की बड़ी बहन ने प्यार से बनाया, एक खूबसूरत नई शुरुआत के जश्न में। 🌸",
+        whatsappTitle:"विवाह का जवाब - Nikita Prasad और Onkar Chafekar"
+    }
+};
+let currentLanguage = "en";
+
+function updateCountdown(){
+    const remaining = Math.max(0, countdownTarget - Date.now());
+    const totalSeconds = Math.floor(remaining / 1000);
+    countdownValues.days.textContent = Math.floor(totalSeconds / 86400);
+    countdownValues.hours.textContent = String(Math.floor(totalSeconds % 86400 / 3600)).padStart(2, "0");
+    countdownValues.minutes.textContent = String(Math.floor(totalSeconds % 3600 / 60)).padStart(2, "0");
+    countdownValues.seconds.textContent = String(totalSeconds % 60).padStart(2, "0");
+}
+
+updateCountdown();
+window.setInterval(updateCountdown, 1000);
+
+document.querySelectorAll(".rsvp-stepper button").forEach(button => {
+    button.addEventListener("click", () => {
+        const input = document.getElementById(button.dataset.target);
+        const minimum = Number(input.min) || 0;
+        const current = Number(input.value) || 0;
+        input.value = Math.max(minimum, current + Number(button.dataset.step));
+    });
+});
+
+rsvpForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const formData = new FormData(rsvpForm);
+    const translations = pageTranslations[currentLanguage];
+    const message = [
+        translations.whatsappTitle,
+        `${translations.guestNameLabel}: ${formData.get("guestName")}`,
+        `${translations.adultCountLabel} ${formData.get("adultCount")}`,
+        `${translations.kidCountLabel} ${formData.get("kidCount")}`,
+        `${translations.joiningDateLabel} ${formData.get("joiningDate")}`
+    ].join("\n");
+    const whatsappUrl = `https://wa.me/916002149041?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+});
+
+backgroundMusic.volume = 0.35;
+
+function updateMusicControl(isPlaying){
+    pauseControl.textContent = isPlaying ? "Ⅱ" : "▶";
+    pauseControl.setAttribute("aria-label", isPlaying ? pageTranslations[currentLanguage].pauseMusic : pageTranslations[currentLanguage].playMusic);
+}
+
+function setLanguage(language){
+    currentLanguage = language;
+    const translations = pageTranslations[language];
+    document.documentElement.lang = language;
+    document.title = translations.pageTitle;
+
+    document.querySelectorAll("[data-i18n]").forEach(element => {
+        element.textContent = translations[element.dataset.i18n];
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach(element => {
+        element.setAttribute("aria-label", translations[element.dataset.i18nAria]);
+    });
+    document.querySelectorAll("[data-i18n-alt]").forEach(element => {
+        element.setAttribute("alt", translations[element.dataset.i18nAlt]);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(element => {
+        element.setAttribute("placeholder", translations[element.dataset.i18nPlaceholder]);
+    });
+
+    datePage.classList.toggle("hindi-mode", language === "hi");
+    languageControl.textContent = language === "en" ? "हि" : "EN";
+    languageControl.setAttribute("aria-label", language === "en" ? translations.switchToHindi : translations.switchToEnglish);
+    updateMusicControl(!backgroundMusic.paused);
+}
+
+backgroundMusic.addEventListener("play", () => updateMusicControl(true));
+backgroundMusic.addEventListener("pause", () => updateMusicControl(false));
+backgroundMusic.addEventListener("error", () => updateMusicControl(false));
+
+function fitScene(){
+    const scale = Math.min(1, window.innerWidth / 430, window.innerHeight / 744);
+    scene.style.setProperty("--scene-scale", scale);
+}
+
+fitScene();
+window.addEventListener("resize", fitScene);
+
+let isLit = false;
+
+lamp.addEventListener("click", () => {
+
+    if(isLit) return;
+
+    scene.classList.add("lit");
+
+    isLit = true;
+
+    // Optional temple bell sound
+
+    const bell = new Audio("temple-bell.mp3");
+    bell.play();
+    backgroundMusic.play().catch(() => updateMusicControl(false));
+
+    window.setTimeout(() => {
+        weddingPage.setAttribute("aria-hidden", "false");
+        scene.classList.add("show-invitation");
+    }, 3000);
+
+});
+
+languageControl.addEventListener("click", () => {
+    setLanguage(currentLanguage === "en" ? "hi" : "en");
+});
+
+pauseControl.addEventListener("click", () => {
+    if(backgroundMusic.paused){
+        backgroundMusic.play().catch(() => updateMusicControl(false));
+    }else{
+        backgroundMusic.pause();
+    }
+});
+
+function showDatePage(){
+    if(!scene.classList.contains("show-invitation") || scene.classList.contains("show-date")) return;
+    datePage.setAttribute("aria-hidden", "false");
+    weddingPage.setAttribute("aria-hidden", "true");
+    scene.classList.add("show-date");
+}
+
+function showWeddingPage(){
+    datePage.setAttribute("aria-hidden", "true");
+    weddingPage.setAttribute("aria-hidden", "false");
+    scene.classList.remove("show-date");
+}
+
+scrollPrompt.addEventListener("click", showDatePage);
+dateBack.addEventListener("click", showWeddingPage);
+
+scene.addEventListener("wheel", (event) => {
+    if(event.deltaY > 35) showDatePage();
+    if(event.deltaY < -35 && scene.classList.contains("show-date")) showWeddingPage();
+}, {passive:true});
+
+let touchStartY = null;
+
+scene.addEventListener("touchstart", (event) => {
+    if(event.target.closest(".scratch-card")){
+        touchStartY = null;
+        return;
+    }
+    touchStartY = event.changedTouches[0].clientY;
+}, {passive:true});
+
+scene.addEventListener("touchend", (event) => {
+    if(touchStartY === null) return;
+    const touchDelta = touchStartY - event.changedTouches[0].clientY;
+    if(touchDelta > 55) showDatePage();
+    if(touchDelta < -55 && scene.classList.contains("show-date")) showWeddingPage();
+    touchStartY = null;
+}, {passive:true});
+
+function initializeScratchCard(canvas){
+    const context = canvas.getContext("2d");
+    const pixelRatio = window.devicePixelRatio || 1;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    canvas.width = width * pixelRatio;
+    canvas.height = height * pixelRatio;
+    context.scale(pixelRatio, pixelRatio);
+
+    const foil = context.createLinearGradient(0, 0, width, height);
+    foil.addColorStop(0, "#b99642");
+    foil.addColorStop(.42, "#ead9a1");
+    foil.addColorStop(.72, "#c6a755");
+    foil.addColorStop(1, "#8e7437");
+    context.fillStyle = foil;
+    context.fillRect(0, 0, width, height);
+
+    for(let index = 0; index < 180; index++){
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        context.fillStyle = index % 4 === 0 ? "rgba(255,255,235,.65)" : "rgba(255,255,255,.24)";
+        context.beginPath();
+        context.arc(x, y, Math.random() * 1.2 + .3, 0, Math.PI * 2);
+        context.fill();
+    }
+
+    context.globalCompositeOperation = "destination-out";
+    let isScratching = false;
+    let isRevealed = false;
+
+    function scratch(event){
+        const bounds = canvas.getBoundingClientRect();
+        const x = (event.clientX - bounds.left) * width / bounds.width;
+        const y = (event.clientY - bounds.top) * height / bounds.height;
+        context.beginPath();
+        context.arc(x, y, 17, 0, Math.PI * 2);
+        context.fill();
+    }
+
+    function checkReveal(){
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        let cleared = 0;
+        let sampled = 0;
+        for(let index = 3; index < pixels.length; index += 16){
+            if(pixels[index] < 128) cleared++;
+            sampled++;
+        }
+        if(cleared / sampled > .38){
+            isRevealed = true;
+            canvas.classList.add("is-revealed");
+            const scratchLayers = document.querySelectorAll(".scratch-layer");
+            const revealedLayers = document.querySelectorAll(".scratch-layer.is-revealed");
+            if(revealedLayers.length === scratchLayers.length){
+                invitationContinuation.setAttribute("aria-hidden", "false");
+                celebrations.setAttribute("aria-hidden", "false");
+                datePage.classList.add("all-dates-revealed");
+                datePage.scrollTo({
+                    top:invitationContinuation.offsetTop - 40,
+                    behavior:"auto"
+                });
+            }
+        }
+    }
+
+    canvas.addEventListener("pointerdown", (event) => {
+        if(isRevealed) return;
+        isScratching = true;
+        canvas.setPointerCapture(event.pointerId);
+        scratch(event);
+    });
+    canvas.addEventListener("pointermove", (event) => {
+        if(isScratching) scratch(event);
+    });
+    canvas.addEventListener("pointerup", () => {
+        if(!isScratching) return;
+        isScratching = false;
+        checkReveal();
+    });
+    canvas.addEventListener("pointercancel", () => { isScratching = false; });
+}
+
+document.querySelectorAll(".scratch-layer").forEach(initializeScratchCard);
+
+</script>
+
+</body>
+</html>
